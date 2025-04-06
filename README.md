@@ -31,7 +31,6 @@ git clone git@github.com:TuringCollegeSubmissions/aumilas-AE.3.5.git
 ```
 
 2. Install [Poetry](https://python-poetry.org/docs/#installation)
-```
 
 3. Install dependencies
 
