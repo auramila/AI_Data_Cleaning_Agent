@@ -1,0 +1,8 @@
+requests
+pandas
+numpy
+streamlit
+matplotlib
+python-dotenv
+langchain
+langchain-community
