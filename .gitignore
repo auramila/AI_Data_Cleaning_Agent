@@ -9,6 +9,9 @@ __pycache__/
 *.pyo
 *.pyd
 
+# Poetry lock file (you might want to commit this, but here’s the option to ignore)
+# poetry.lock
+
 # System files
 .DS_Store
 Thumbs.db
