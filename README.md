@@ -1,30 +1,26 @@
-# 🧼 Data Cleaning Agent
+# 🧼 AI-Powered Data Cleaning App
 
 ## Introduction
 
-Data Cleaning Agent is built using Streamlit and LangChain. This agent can process CSV or Excel files, detect common issues like missing values or outliers, and provide users with a clean dataset ready for analysis.
+An intelligent Streamlit application that helps you clean messy datasets for analysis. Users can upload CSV or Excel files, visualize issues like missing values and outliers, and clean data using manual tools or AI-powered workflows. Choose between receiving smart suggestions or letting a multi-agent system handle everything automatically.
 
-An AI-powered Streamlit app that helps you clean messy datasets using:
-- ✅ Streamlit for an interactive UI
-- 🧠 OpenAI (GPT) to suggest intelligent cleaning steps
-- 🛠️ LangChain agents to preview and clean the dataset using tools
-- 📊 Visualizations for missing values
-- 📥 File download and report generation
+💡 What It Does
 
-## ✨ Features
-
-- Upload CSV or Excel files
-- View data preview and missing values
-- Choose how to handle missing values (drop, impute, fill)
-- Automatically detect duplicates and outliers
-- Get AI-generated cleaning suggestions
-- Use a LangChain agent to run cleaning tasks
-- Download cleaned dataset and summary report
+- ✅ Interactive UI built with Streamlit
+- 🧠 Uses OpenAI (GPT) to suggest intelligent cleaning steps
+- 🛠️ LangChain agents preview, reason, and clean the dataset
+- 📊 Visualize missing values instantly
+- 🧼 Clean data manually or through agents
+- 🧠 Choose from agent personalities (Analyst, Coach, Playful)
+- 🔁 Side-by-side before/after comparison
+- 📥 Download cleaned data and reports
 
 ## Technologies Used
 
 - Streamlit
-- OpenAI API (langchain)
+- OpenAI API
+- LangChain
+- Pandas
 
 ## Installation and Setup
 

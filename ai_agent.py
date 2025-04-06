@@ -7,31 +7,37 @@ load_dotenv()
 api_key = os.getenv("OPENAI_API_KEY")
 client = OpenAI(api_key=api_key)
 
-def suggest_cleaning_steps(df: pd.DataFrame, model: str, temperature: float, max_tokens: int) -> str:
+def suggest_cleaning_steps_with_personality(
+    df: pd.DataFrame,
+    model: str,
+    temperature: float,
+    max_tokens: int,
+    system_message: str = "You are an expert data analyst helping with data cleaning."
+) -> str:
     preview = df.head(3).to_csv(index=False)
 
     prompt = f"""
-You are a data cleaning assistant.
 Here is a preview of a dataset:
 {preview}
 
-Suggest intelligent and detailed cleaning steps to improve the dataset.
-Include handling for:
-- missing values
-- outlier detection
-- column renaming or standardization
-- data type corrections (e.g. convert to date, int)
-- irrelevant or low-variance column removal
+Suggest intelligent and detailed cleaning steps to improve the dataset. Consider:
+- handling missing values
+- detecting and flagging outliers
+- standardizing column names
+- converting data types
+- removing irrelevant or low-variance columns
 
-Respond with clear numbered steps and a short explanation for each.
+Be clear, professional, and concise.
 """
+
+    messages = [
+        {"role": "system", "content": system_message},
+        {"role": "user", "content": prompt}
+    ]
 
     response = client.chat.completions.create(
         model=model,
-        messages=[
-            {"role": "system", "content": "You are an expert data analyst helping with data cleaning."},
-            {"role": "user", "content": prompt},
-        ],
+        messages=messages,
         temperature=temperature,
         max_tokens=max_tokens
     )

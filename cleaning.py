@@ -6,7 +6,6 @@ import matplotlib.pyplot as plt
 def clean_data(df: pd.DataFrame, missing_strategy: str = "Drop rows with missing data"):
     summary = []
 
-    # Handle missing values
     missing_count = df.isnull().sum().sum()
 
     if missing_strategy == "Drop rows with missing data":
@@ -23,17 +22,13 @@ def clean_data(df: pd.DataFrame, missing_strategy: str = "Drop rows with missing
         df = df.fillna("MISSING")
         summary.append(f"🔄 Replaced {missing_count} missing values with 'MISSING'.")
 
-    # Remove duplicates
     dup_count = df.duplicated().sum()
     df = df.drop_duplicates()
     summary.append(f"🚮 Removed {dup_count} duplicate rows.")
 
-    # Outlier detection (Z-score)
     numeric_cols = df.select_dtypes(include=np.number).columns
     for col in numeric_cols:
-        col_mean = df[col].mean()
-        col_std = df[col].std()
-        z_scores = (df[col] - col_mean) / col_std
+        z_scores = (df[col] - df[col].mean()) / df[col].std()
         outliers = z_scores.abs() > 3
         summary.append(f"⚠️ Found {outliers.sum()} outliers in '{col}' (not removed).")
 
