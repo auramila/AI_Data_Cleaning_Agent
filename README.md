@@ -34,17 +34,13 @@ An AI-powered Streamlit app that helps you clean messy datasets using:
 git clone git@github.com:TuringCollegeSubmissions/aumilas-AE.3.5.git
 ```
 
-2. Create a Virtual Environment (Optional)
-
-```markdown
-python -m venv venv
-source venv/bin/activate
+2. Install [Poetry](https://python-poetry.org/docs/#installation)
 ```
 
 3. Install dependencies
 
 ```markdown
-pip install -r requirements.txt
+poetry install
 ```
 
 4. Set Up API Keys
@@ -55,12 +51,10 @@ Create a .env file in the root directory and add your API keys:
 OPENAI_API_KEY=your_openai_key
 ```
 
-Also, ensure you have your Firebase credentials (firebase_credentials.json) in the root directory.
-
 5. Run the Application
 
 ```markdown
-streatlit run Cleaning_App.py
+poetry run streamlit run main.py
 ```
 
 ## Authors
