@@ -2,25 +2,28 @@
 
 ## Introduction
 
-An intelligent Streamlit application that helps you clean messy datasets for analysis. Users can upload CSV or Excel files, visualize issues like missing values and outliers, and clean data using manual tools or AI-powered workflows. Choose between receiving smart suggestions or letting a multi-agent system handle everything automatically.
+An intelligent Streamlit application for cleaning and preprocessing messy datasets. Use either an AI multi-agent approach (powered by OpenAI + LangChain) or manual cleaning with advanced options. Visualize missing values, outliers, and easily download cleaned results.
 
-💡 What It Does
+✨ Features
 
-- ✅ Interactive UI built with Streamlit
-- 🧠 Uses OpenAI (GPT) to suggest intelligent cleaning steps
-- 🛠️ LangChain agents preview, reason, and clean the dataset
-- 📊 Visualize missing values instantly
-- 🧼 Clean data manually or through agents
-- 🧠 Choose from agent personalities (Analyst, Coach, Playful)
-- 🔁 Side-by-side before/after comparison
-- 📥 Download cleaned data and reports
+- CSV/Excel File Upload – Supports large files up to ~1GB-
+- AI Settings – Tune model, temperature, token limits, and frequency penalty
+- Personality Tones – Switch between “Professional Analyst,” “Friendly Coach,” or “Playful Assistant”
+- AI Suggestions – Summarizes recommended cleaning steps, estimates token usage + cost
+- Multi-Agent Auto Clean – Automatic pipeline to assess data, propose steps, and clean
+- Manual Cleaning – Impute or drop missing values, rename columns, fix dtypes, remove low variance columns
+- Before/After Comparison – See data side by side, track changes made
+- Downloadable – Export cleaned dataset and summary report
+- Missing Values – Quick bar chart overview
+- Agent Summary – Check the AI reasoning and final steps
 
 ## Technologies Used
 
-- Streamlit
-- OpenAI API
-- LangChain
-- Pandas
+- Streamlit – Fast UI
+- LangChain – Multi-agent orchestrations
+- OpenAI GPT – AI suggestions + auto cleaning logic
+- Pandas – Data manipulation
+- Altair – Outlier visualizations
 
 ## Installation and Setup
 
