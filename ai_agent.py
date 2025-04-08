@@ -12,8 +12,9 @@ def suggest_cleaning_steps_with_personality(
     model: str,
     temperature: float,
     max_tokens: int,
-    system_message: str = "You are an expert data analyst helping with data cleaning."
-) -> str:
+    system_message: str = "You are an expert data analyst helping with data cleaning.",
+    frequency_penalty: float = 0.0
+) -> tuple[str, dict]:
     preview = df.head(3).to_csv(index=False)
 
     prompt = f"""
@@ -39,7 +40,11 @@ Be clear, professional, and concise.
         model=model,
         messages=messages,
         temperature=temperature,
-        max_tokens=max_tokens
+        max_tokens=max_tokens,
+        frequency_penalty=frequency_penalty
     )
 
-    return response.choices[0].message.content
+    suggestion = response.choices[0].message.content
+    usage = response.usage.model_dump() if hasattr(response, "usage") else None
+
+    return suggestion, usage

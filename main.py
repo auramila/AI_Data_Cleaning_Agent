@@ -14,9 +14,15 @@ st.title("🧼 AI-Powered Data Cleaning Assistant")
 
 # Sidebar AI config
 st.sidebar.header("🤖 AI Settings")
-model = st.sidebar.selectbox("Model", ["gpt-3.5-turbo", "gpt-4"])
+model = st.sidebar.selectbox("Model", [
+    "gpt-3.5-turbo",
+    "gpt-3.5-turbo-16k",
+    "gpt-4",
+    "gpt-4-1106-preview"
+])
 temperature = st.sidebar.slider("Temperature", 0.0, 1.0, 0.3)
 max_tokens = st.sidebar.slider("Max Tokens", 100, 2000, 500)
+frequency_penalty = st.sidebar.slider("Frequency Penalty", 0.0, 2.0, 0.0)
 
 # Agent personality options
 personality = st.sidebar.selectbox("🧠 Agent Personality", [
@@ -25,45 +31,42 @@ personality = st.sidebar.selectbox("🧠 Agent Personality", [
     "Playful Assistant"
 ])
 
-# Toggle auto-clean vs manual decision
-auto_clean = st.sidebar.toggle("⚙️ Auto-clean mode", value=True)
-
-# Upload file
-uploaded_file = st.file_uploader("📁 Upload CSV or Excel file", type=["csv", "xlsx"])
+# ---------------------
+# 1. Upload File & Preview
+# ---------------------
+st.header("1️⃣ Upload File and See Preview")
+uploaded_file = st.file_uploader("📁 Upload CSV or Excel file", type=["csv", "xlsx"], accept_multiple_files=False)
 
 if uploaded_file:
+    if uploaded_file.size > 1_000_000_000:
+        st.error("🚫 File too large. Please upload a file smaller than 1GB.")
+        st.stop()
+
+    if not uploaded_file.name.lower().endswith(('.csv', '.xlsx')):
+        st.error("🚫 Invalid file type. Only CSV and Excel files are supported.")
+        st.stop()
+
+    if uploaded_file.size == 0:
+        st.error("🚫 Uploaded file is empty.")
+        st.stop()
+
     try:
         if uploaded_file.name.endswith(".csv"):
-            df = pd.read_csv(uploaded_file)
+            chunks = pd.read_csv(uploaded_file, chunksize=100000, engine='python')
+            df = pd.concat(chunks, ignore_index=True)
         else:
             df = pd.read_excel(uploaded_file)
 
         st.subheader("🔍 Raw Dataset Preview")
         st.dataframe(df)
 
-        # Visualization: Missing values
         st.subheader("📊 Missing Values Overview")
         visualize_missing_data(df)
 
-        # Missing value strategy
-        strategy = st.radio("Missing Value Strategy", [
-            "Impute with mean (numeric) or mode (categorical)",
-            "Drop rows with missing data",
-            "Replace with 'MISSING'"
-        ])
-
-        # Manual Cleaning
-        if st.button("🧼 Run Manual Cleaning"):
-            cleaned_df, summary = clean_data(df, missing_strategy=strategy)
-            st.subheader("✅ Cleaned Data Preview")
-            st.dataframe(cleaned_df)
-            st.subheader("📋 Cleaning Summary")
-            st.text(summary)
-            st.download_button("📥 Download Cleaned CSV", cleaned_df.to_csv(index=False), "cleaned_data.csv")
-            report = generate_report(summary)
-            st.download_button("📄 Download Report", report.encode("utf-8"), "cleaning_report.txt")
-
-        # AI Suggestions
+        # ---------------------
+        # 2. Get AI Suggestions
+        # ---------------------
+        st.header("2️⃣ Get AI Suggestions")
         if st.button("🧠 Get AI Cleaning Suggestions"):
             with st.spinner("Thinking..."):
                 if personality == "Professional Analyst":
@@ -73,52 +76,94 @@ if uploaded_file:
                 else:
                     tone = "You are a playful assistant who enjoys cleaning up messy data!"
 
-                suggestions = suggest_cleaning_steps(df, model, temperature, max_tokens, system_message=tone)
+                suggestions, usage = suggest_cleaning_steps(df, model, temperature, max_tokens, system_message=tone, frequency_penalty=frequency_penalty)
 
             st.subheader("💡 AI Suggestions")
             st.markdown(suggestions)
+            if usage:
+                cost_per_1k = {
+                    'gpt-3.5-turbo': 0.0015,
+                    'gpt-3.5-turbo-16k': 0.003,
+                    'gpt-4': 0.03,
+                    'gpt-4-1106-preview': 0.01
+                }.get(model, 0.0015)
+                total_cost = (usage['total_tokens'] / 1000) * cost_per_1k
+                st.caption(f"🔢 Tokens used: {usage['total_tokens']} (Prompt: {usage['prompt_tokens']}, Completion: {usage['completion_tokens']})")
+                st.caption(f"💸 Estimated Cost: ${total_cost:.4f} USD")
 
-        # Multi-Agent Section
-        st.subheader("🧪 Multi-Agent Auto Clean")
-        user_prompt = st.text_input("What would you like the AI to do?", value="Suggest and clean this dataset using multi-agent reasoning.")
+        # ---------------------
+        # 3. Run AI + Manual Cleaning Tabs
+        # ---------------------
+        st.header("3️⃣ Clean with AI or Manual Tools")
+        tabs = st.tabs(["🧠 AI Agent Cleaner", "🛠️ Manual Cleaning"])
 
-        if st.button("🤖 Run Multi-Agent Cleaning"):
-            with st.spinner("Running LangChain Multi-Agent..."):
-                try:
-                    run_prompt = user_prompt
-                    if auto_clean:
-                        run_prompt += " Please clean the dataset automatically."
-                    else:
-                        run_prompt += " Just suggest and explain cleaning steps, don't clean automatically."
+        with tabs[0]:
+            st.subheader("🤖 Multi-Agent Auto Clean")
+            user_prompt = st.text_input("What would you like the AI to do?", value="Suggest and clean this dataset using multi-agent reasoning.")
 
-                    result = run_multi_agent_cleaning(df, run_prompt)
-                    st.subheader("📋 Multi-Agent Result")
-                    st.markdown(result)
+            if st.button("▶️ Run Multi-Agent Cleaning"):
+                with st.spinner("Running LangChain Multi-Agent..."):
+                    try:
+                        run_prompt = user_prompt
+                        run_prompt += " First, suggest and explain cleaning steps. Then clean the dataset automatically."
+                        result = run_multi_agent_cleaning(df, run_prompt)
 
-                    cleaned_df = get_cleaned_df()
-                    original_df = get_original_df()
-                    summary = get_cleaning_summary()
+                        cleaned_df = get_cleaned_df()
+                        original_df = get_original_df()
+                        summary = get_cleaning_summary()
 
-                    if cleaned_df is not None:
-                        st.subheader("🪞 Side-by-Side Comparison")
-                        col1, col2 = st.columns(2)
-                        with col1:
-                            st.markdown("**Before Cleaning**")
-                            st.dataframe(original_df.head(20))
-                        with col2:
-                            st.markdown("**After Cleaning**")
-                            st.dataframe(cleaned_df.head(20))
+                        st.subheader("📋 Multi-Agent Result")
+                        st.markdown(result)
 
-                        st.download_button("📥 Download Agent-Cleaned CSV", cleaned_df.to_csv(index=False), "agent_cleaned_data.csv")
-                    else:
-                        st.warning("⚠️ No cleaned data was returned by the agent.")
+                        if cleaned_df is not None:
+                            st.subheader("🪞 Side-by-Side Comparison")
+                            col1, col2 = st.columns(2)
+                            with col1:
+                                st.markdown("**Before Cleaning**")
+                                st.dataframe(original_df.head(20))
+                            with col2:
+                                st.markdown("**After Cleaning**")
+                                st.dataframe(cleaned_df.head(20))
 
-                    if summary:
-                        st.subheader("📄 Agent Cleaning Summary")
-                        st.text(summary)
+                            st.download_button("📥 Download Agent-Cleaned CSV", cleaned_df.to_csv(index=False), "agent_cleaned_data.csv")
+                        else:
+                            st.warning("⚠️ No cleaned data was returned by the agent.")
 
-                except Exception as e:
-                    st.error(f"Agent error: {e}")
+                        if summary:
+                            st.subheader("📄 Agent Cleaning Summary")
+                            st.text(summary.replace("\n\n💡 The AI followed the cleaning plan it suggested earlier.", "[AI plan omitted for brevity]"))
+
+                    except Exception as e:
+                        st.error(f"Agent error: {e}")
+
+        with tabs[1]:
+            st.subheader("🧼 Manual Cleaning")
+            strategy = st.radio("Missing Value Strategy", [
+                "Impute with mean (numeric) or mode (categorical)",
+                "Drop rows with missing data",
+                "Replace with 'MISSING'"
+            ])
+
+            st.markdown("### 🧹 Advanced Cleaning Options")
+            standardize_columns = st.checkbox("Standardize column names (e.g., lowercase, underscores)", value=True)
+            correct_dtypes = st.checkbox("Correct data types (e.g., strings to dates/numbers)", value=True)
+            remove_low_variance = st.checkbox("Remove columns with very low variance", value=True)
+
+            if st.button("🧼 Run Manual Cleaning"):
+                cleaned_df, summary = clean_data(
+                    df,
+                    missing_strategy=strategy,
+                    standardize_columns=standardize_columns,
+                    correct_dtypes=correct_dtypes,
+                    remove_low_variance=remove_low_variance
+                )
+                st.subheader("✅ Cleaned Data Preview")
+                st.dataframe(cleaned_df)
+                st.subheader("📋 Cleaning Summary")
+                st.text(summary)
+                st.download_button("📥 Download Cleaned CSV", cleaned_df.to_csv(index=False), "cleaned_data.csv")
+                report = generate_report(summary)
+                st.download_button("📄 Download Report", report.encode("utf-8"), "cleaning_report.txt")
 
     except Exception as e:
         st.error(f"Error processing file: {e}")
