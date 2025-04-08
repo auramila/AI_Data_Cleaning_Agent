@@ -4,6 +4,12 @@
 
 An intelligent Streamlit application for cleaning and preprocessing messy datasets. Use either an AI multi-agent approach (powered by OpenAI + LangChain) or manual cleaning with advanced options. Visualize missing values, outliers, and easily download cleaned results.
 
+## 🚀 Deployed App
+The application is live and can be accessed here:  
+🔗 **[Aura Data Cleaning AI App](https://auraagent.streamlit.app)**  
+
+Feel free to try it out and provide feedback!
+
 ✨ Features
 
 - CSV/Excel File Upload – Supports large files up to ~1GB-
